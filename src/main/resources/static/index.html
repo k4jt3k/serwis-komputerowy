@@ -2,60 +2,180 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serwis Komputerowy</title>
+    <title>SERWIS PRO | System Zarządzania</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --tech-yellow: #ffc107;
+            --dark-bg: #0f0f0f;
+            --dark-card: #1a1a1a;
+            --border-color: #333;
+            --text-muted: #888;
+        }
+
+        body { background-color: var(--dark-bg); color: #eee; font-family: 'Inter', sans-serif; }
+
+        /* Navbar Industrial Style */
+        .navbar { background-color: #000 !important; border-bottom: 3px solid var(--tech-yellow); }
+        .navbar-brand { font-weight: 800; color: var(--tech-yellow) !important; letter-spacing: 2px; }
+
+        /* Tabs */
+        .nav-tabs { border-bottom: 1px solid var(--border-color); }
+        .nav-link { color: var(--text-muted); border: none !important; transition: 0.3s; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        .nav-link:hover { color: var(--tech-yellow); }
+        .nav-link.active { background: transparent !important; color: var(--tech-yellow) !important; border-bottom: 3px solid var(--tech-yellow) !important; }
+
+        /* Cards & Tables */
+        .card { background-color: var(--dark-card); border: 1px solid var(--border-color); border-radius: 8px; margin-top: 20px; }
+        .card-header { background-color: #222 !important; border-bottom: 1px solid var(--border-color); color: var(--tech-yellow); font-weight: 700; font-size: 0.9rem; }
+        
+        .table { color: #ccc; vertical-align: middle; }
+        .table thead th { color: var(--tech-yellow); border-bottom: 2px solid var(--border-color); font-size: 0.7rem; text-transform: uppercase; }
+        .table td { border-bottom: 1px solid #222; font-size: 0.9rem; }
+
+        /* UI Elements */
+        .btn-yellow { background-color: var(--tech-yellow); color: #000; font-weight: 700; border: none; text-transform: uppercase; font-size: 0.75rem; border-radius: 4px; padding: 8px 16px; }
+        .btn-yellow:hover { background-color: #e5ac00; transform: translateY(-1px); }
+        .btn-outline-yellow { border: 1px solid var(--tech-yellow); color: var(--tech-yellow); background: transparent; }
+        .btn-outline-yellow:hover { background: var(--tech-yellow); color: #000; }
+        
+        .form-control, .form-select { background-color: #111; border: 1px solid #444; color: #fff; }
+        .form-control:focus { background-color: #151515; border-color: var(--tech-yellow); color: #fff; box-shadow: none; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Status Badges */
+        .badge-status { background-color: var(--tech-yellow); color: #000; font-weight: 600; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <div class="container mt-5">
-        <header class="pb-3 mb-4 border-bottom">
-            <span class="fs-4">System Zarządzania Serwisem 🖥️</span>
-        </header>
+<nav class="navbar navbar-dark shadow-sm">
+    <div class="container"><span class="navbar-brand">🛠️ SERWIS PRO</span></div>
+</nav>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Lista Klientów</h5>
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-success mb-3" onclick="pobierzKlientow()">Odśwież Listę</button>
-                        <ul id="lista-klientow" class="list-group">
-                            <li class="list-group-item text-muted">Kliknij przycisk, aby pobrać dane...</li>
-                        </ul>
-                    </div>
-                </div>
+<div class="container mt-4">
+    <ul class="nav nav-tabs mb-2" id="mainTabs">
+        <li class="nav-item"><button class="nav-link active" onclick="pokazSekcje('klienci')">Klienci</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="pokazSekcje('zlecenia')">Zlecenia</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="pokazSekcje('czesci')">Magazyn</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="pokazSekcje('zamowienia')">Zamówienia</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="pokazSekcje('raporty')">Raporty</button></li>
+    </ul>
+
+    <div id="sekcja-klienci" class="tab-content active">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>REJESTR KLIENTÓW</span>
+                <button class="btn btn-yellow" onclick="otworzModal('modalKlient')">➕ Dodaj Klienta</button>
             </div>
+            <table class="table table-hover mb-0">
+                <thead><tr><th>ID</th><th>Klient</th><th>Telefon</th><th>Adres</th></tr></thead>
+                <tbody id="tabela-klientow-body"></tbody>
+            </table>
         </div>
     </div>
 
-    <script>
-        async function pobierzKlientow() {
-            const listaUl = document.getElementById('lista-klientow');
-            
-            try {
-                // Adres Twojego backendu (prawdopodobnie taki jak w Swaggerze)
-                const response = await fetch('http://localhost:8080/api/klienci');
-                
-                if (!response.ok) throw new Error('Błąd połączenia');
-                
-                const klienci = await response.json();
-                
-                listaUl.innerHTML = ''; // Czyścimy listę przed dodaniem nowych
-                
-                klienci.forEach(klient => {
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item';
-                    // Dopasuj pola (klient.imie/klient.name) do tego co widzisz w Swaggerze!
-                    li.textContent = `ID: ${klient.id} | ${klient.imie || 'Brak imienia'}`; 
-                    listaUl.appendChild(li);
-                });
-            } catch (error) {
-                alert("Nie udało się pobrać danych. Sprawdź czy backend działa i czy masz włączony CORS!");
-                console.error(error);
-            }
-        }
-    </script>
+    <div id="sekcja-zlecenia" class="tab-content">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>ZLECENIA SERWISOWE</span>
+                <button class="btn btn-yellow" onclick="otworzModalZlecenia()">➕ Nowe Zlecenie</button>
+            </div>
+            <table class="table table-hover mb-0">
+                <thead><tr><th>ID</th><th>Klient</th><th>Model i S/N</th><th>Usterka</th><th>Status</th><th>Akcja</th></tr></thead>
+                <tbody id="tabela-zlecenia-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="sekcja-czesci" class="tab-content">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>STAN MAGAZYNOWY</span>
+                <button class="btn btn-yellow" onclick="otworzModal('modalCzesc')">➕ Nowa Część</button>
+            </div>
+            <table class="table table-hover mb-0">
+                <thead><tr><th>ID</th><th>Nazwa</th><th>Nr Kat.</th><th>Stan</th><th>Akcja</th></tr></thead>
+                <tbody id="tabela-czesci-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="sekcja-zamowienia" class="tab-content">
+        <div class="card shadow text-white">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>ZAMÓWIENIA ZEWNĘTRZNE</span>
+                <button class="btn btn-yellow" onclick="otworzModalZamowienia()">➕ Nowe</button>
+            </div>
+            <table class="table table-hover mb-0 text-white">
+                <thead><tr><th>ID</th><th>Zlecenie</th><th>Cena</th><th>Status</th><th>Akcja</th></tr></thead>
+                <tbody id="tabela-zamowienia-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="sekcja-raporty" class="tab-content">
+        <div class="row g-3">
+            <div class="col-md-4"><div class="card p-4 text-center border-warning"><h6>RAZEM KLIENTÓW</h6><h2 id="raport-1-content" class="text-warning">...</h2></div></div>
+            <div class="col-md-4"><div class="card p-4 text-center border-warning"><h6>ZADANIA AKTYWNE</h6><h2 id="raport-2-content" class="text-warning">...</h2></div></div>
+            <div class="col-md-4"><div class="card p-4 text-center border-warning"><h6>OSTATNIA AKTUALIZACJA</h6><h2 id="raport-3-content" class="text-warning" style="font-size: 1.2rem;">...</h2></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalKlient" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form id="formKlient">
+    <div class="modal-header"><h5>NOWY KLIENT</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="text" id="f-imie" placeholder="Imię" class="form-control mb-3" required>
+        <input type="text" id="f-nazwisko" placeholder="Nazwisko" class="form-control mb-3" required>
+        <input type="text" id="f-telefon" placeholder="Telefon" class="form-control mb-3">
+        <input type="text" id="f-adres" placeholder="Adres" class="form-control mb-3">
+        <button type="submit" class="btn btn-yellow w-100">ZAPISZ KLIENTA</button>
+    </div></form></div></div></div>
+
+<div class="modal fade" id="modalZlecenie" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form id="formZlecenie">
+    <div class="modal-header"><h5>NOWE ZLECENIE</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <select id="f-zlec-klient" class="form-select mb-3" required></select>
+        <input type="text" id="f-zlec-model" placeholder="Model Urządzenia" class="form-control mb-3" required>
+        <input type="text" id="f-zlec-sn" placeholder="Numer Seryjny (S/N)" class="form-control mb-3">
+        <textarea id="f-zlec-opis" placeholder="Opis usterki" class="form-control mb-3" required></textarea>
+        <button type="submit" class="btn btn-yellow w-100">UTWÓRZ ZLECENIE</button>
+    </div></form></div></div></div>
+
+<div class="modal fade" id="modalEdytujZlecenie" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form id="formEdytujZlecenie">
+    <div class="modal-header"><h5>AKTUALIZACJA STATUSU</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="hidden" id="edit-zlec-id">
+        <select id="edit-zlec-statusId" class="form-select mb-4">
+            <option value="1">PRZYJĘTE</option><option value="2">W NAPRAWIE</option>
+            <option value="3">GOTOWE</option><option value="4">WYDANE</option>
+        </select>
+        <button type="submit" class="btn btn-yellow w-100">ZATWIERDŹ STATUS</button>
+    </div></form></div></div></div>
+
+<div class="modal fade" id="modalZamowienie" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form id="formZamowienie">
+    <div class="modal-header"><h5>ZAMÓWIENIE CZĘŚCI</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <select id="f-zam-zlecenie" class="form-select mb-3" required></select>
+        <input type="number" id="f-zam-cena" placeholder="Cena (PLN)" class="form-control mb-3" required>
+        <button type="submit" class="btn btn-yellow w-100">ZŁÓŻ ZAMÓWIENIE</button>
+    </div></form></div></div></div>
+
+<div class="modal fade" id="modalCzesc" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form id="formCzesc">
+    <div class="modal-header"><h5>DODAJ CZĘŚĆ DO KATALOGU</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <input type="text" id="c-nazwa" placeholder="Nazwa części" class="form-control mb-3" required>
+        <input type="text" id="c-nr" placeholder="Numer katalogowy" class="form-control mb-3" required>
+        <input type="number" id="c-ilosc" placeholder="Początkowa ilość" class="form-control mb-3" required>
+        <input type="text" id="c-lokalizacja" placeholder="Lokalizacja (np. Półka A1)" class="form-control mb-3">
+        <button type="submit" class="btn btn-yellow w-100">DODAJ CZĘŚĆ</button>
+    </div></form></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
