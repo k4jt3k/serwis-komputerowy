@@ -11,6 +11,7 @@ import pl.serwis.komputerowy.web.dto.*;
 
 @RestController
 @RequestMapping("/api/zlecenia")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.OPTIONS})
 public class ZlecenieController {
 
   private final ZlecenieService zlecenieService;
